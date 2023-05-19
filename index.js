@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 
-const uri = "mongodb+srv://toysManager:ilwDAieHk6rcjiP0@cluster0.itpj9d6.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.itpj9d6.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -50,8 +50,22 @@ async function run() {
       const result = await toysCollection.deleteOne(query);
       res.send(result);
   })
-
-  
+/* 
+  app.put("/updateJob/:id", async (req, res) => {
+    const id = req.params.id;
+    const body = req.body;
+    console.log(body);
+    const filter = { _id: new ObjectId(id) };
+    const updateDoc = {
+      // $set: {
+      //   title: body.title,
+      //   salary: body.salary,
+      //   category: body.category,
+      // },
+    };
+    const result = await toysCollection.updateOne(filter, updateDoc);
+    res.send(result);
+  }); */
     app.get("/myToys/:email", async (req, res) => {
       const toys = await  toysCollection
         .find({
