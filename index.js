@@ -50,9 +50,9 @@ async function run() {
       const result = await toysCollection.deleteOne(query);
       res.send(result);
   })
+
+  
     app.get("/myToys/:email", async (req, res) => {
-      
-      
       const toys = await  toysCollection
         .find({
           sellerEmail: req.params.email,
