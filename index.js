@@ -50,22 +50,38 @@ async function run() {
       const result = await toysCollection.deleteOne(query);
       res.send(result);
   })
-/* 
-  app.put("/updateJob/:id", async (req, res) => {
+
+  app.put("/updateToy/:id", async (req, res) => {
     const id = req.params.id;
     const body = req.body;
     console.log(body);
     const filter = { _id: new ObjectId(id) };
     const updateDoc = {
-      // $set: {
-      //   title: body.title,
-      //   salary: body.salary,
-      //   category: body.category,
-      // },
+      $set: {
+        price: body.price,
+        quantity: body.quantity,
+        toyName: body.toyName,
+        description:body.description,
+      },
     };
     const result = await toysCollection.updateOne(filter, updateDoc);
     res.send(result);
-  }); */
+  }); 
+
+
+  app.get("/getToysByText/:text", async (req, res) => {
+    const text = req.params.text;
+    const result = await toysCollection
+      .find({
+        $or: [
+          { toyName: { $regex: text, $options: "i" } },
+          
+        ],
+      })
+      .toArray();
+    res.send(result);
+  });
+
     app.get("/myToys/:email", async (req, res) => {
       const toys = await  toysCollection
         .find({
