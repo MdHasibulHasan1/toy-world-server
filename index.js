@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const app = express()
@@ -37,6 +37,23 @@ async function run() {
       const result = await toysCollection.insertOne(body);
       
       
+    });
+    app.get("/toys", async (req, res) => {
+      const toys = await toysCollection
+        .find({})
+        .toArray();
+      res.send(toys);
+    });
+    
+    app.get("/myToys/:email", async (req, res) => {
+      
+      
+      const toys = await  toysCollection
+        .find({
+          sellerEmail: req.params.email,
+        })
+        .toArray();
+      res.send(toys);
     });
 
     // Send a ping to confirm a successful connection
