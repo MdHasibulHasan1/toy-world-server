@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+     client.connect();
 
     const db = client.db("toyMarketplace");
     const toysCollection = db.collection("toys");
@@ -38,12 +38,15 @@ async function run() {
       
       
     });
+    
     app.get("/toys", async (req, res) => {
       const toys = await toysCollection
         .find({})
+        .limit(20) 
         .toArray();
       res.send(toys);
     });
+    
     app.delete('/toys/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
@@ -81,16 +84,23 @@ async function run() {
       .toArray();
     res.send(result);
   });
-
-    app.get("/myToys/:email", async (req, res) => {
-      const toys = await  toysCollection
-        .find({
-          sellerEmail: req.params.email,
-        })
-        .toArray();
-      res.send(toys);
-    });
-
+  app.get("/myToys/:email", async (req, res) => {
+    const { email } = req.params;
+    const { sortBy, sortOrder } = req.query;
+  
+    const sortOptions = {};
+    if (sortBy && sortOrder) {
+      sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
+    }
+  
+    const toys = await toysCollection
+      .find({ sellerEmail: email })
+      .sort(sortOptions)
+      .toArray();
+  
+    res.send(toys);
+  });
+  
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
