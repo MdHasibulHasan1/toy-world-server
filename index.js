@@ -33,16 +33,12 @@ async function run() {
     const blogsCollection= db.collection("blogs");
     const categoriesCollection= db.collection("categories");
     
- 
-    
-    
     // Get Blogs
     app.get("/blogs", async (req, res) => {
       const blogs = await blogsCollection.find({}).toArray();
       res.json(blogs);
     });
     
-
 
 // Get sub-categories
     app.get("/sub-categories", async (req, res) => {
@@ -116,7 +112,6 @@ app.get('/subCategories/:id', (req, res) => {
       });
     });
     
-
     
 app.get("/toys/:Id", async (req, res) => {
   const { Id } = req.params;
@@ -128,8 +123,6 @@ app.get("/toys/:Id", async (req, res) => {
     res.status(404).send({ error: "Toy not found" });
   }
 });
-    
-    
     
     
     app.delete('/toys/:id', async (req, res) => {
