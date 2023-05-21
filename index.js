@@ -30,26 +30,112 @@ async function run() {
 
     const db = client.db("toyMarketplace");
     const toysCollection = db.collection("toys");
+    const blogsCollection= db.collection("blogs");
+    const categoriesCollection= db.collection("categories");
+    
+ 
+    
+    
+    // Get Blogs
+    app.get("/blogs", async (req, res) => {
+      const blogs = await blogsCollection.find({}).toArray();
+      res.json(blogs);
+    });
+    
+
+
+// Get sub-categories
+    app.get("/sub-categories", async (req, res) => {
+      const result = await categoriesCollection.find({}).toArray();
+      res.send(result);
+    });
+
+
+ // Endpoint to get details of a specific subcategory
+app.get('/subCategories/:id', (req, res) => {
+  const subCategoryId = req.params.id;
+
+  // Find the subcategory based on the provided ID
+  let subCategory;
+  for (const category of categoriesCollection) {
+    subCategory = category.subCategories.find(subCat => subCat._id === subCategoryId);
+    if (subCategory) {
+      break;
+    }
+  }
+
+  if (!subCategory) {
+    return res.status(404).json({ message: 'Subcategory not found' });
+  }
+
+  // Return the subcategory details
+  res.send(subCategory);
+});
+
+
 // post a toy
     app.post("/toys", async (req, res) => {
       const body = req.body;
       
       const result = await toysCollection.insertOne(body);
-      
+      res.send(result);
       
     });
-    
     app.get("/toys", async (req, res) => {
+      const page = parseInt(req.query.page) || 1; // Get the page number from the query parameter, defaulting to 1 if not provided
+      const limit = 20; // Set the number of toys to fetch per page
+      const skip = (page - 1) * limit; // Calculate the number of toys to skip based on the page number and limit
+    
+      const totalToys = await toysCollection.countDocuments({});
+      const totalPages = Math.ceil(totalToys / limit);
+    
       const toys = await toysCollection
         .find({})
-        .limit(20) 
+        .skip(skip)
+        .limit(limit)
         .toArray();
-      res.send(toys);
+    
+      res.send({
+        toys: toys,
+        currentPage: page,
+        totalPages: totalPages,
+      });
     });
+    
+    app.get("/getToysByText/:searchText", async (req, res) => {
+      const searchText = req.params.searchText;
+    
+      const toys = await toysCollection
+        .find({ toyName: { $regex: searchText, $options: "i" } })
+        .toArray();
+    
+      res.send({
+        toys: toys,
+        currentPage: 1,
+        totalPages: 1,
+      });
+    });
+    
+
+    
+app.get("/toys/:Id", async (req, res) => {
+  const { Id } = req.params;
+  const toy = await toysCollection.findOne({ _id: Id });
+
+  if (toy) {
+    res.send({ toy });
+  } else {
+    res.status(404).send({ error: "Toy not found" });
+  }
+});
+    
+    
+    
     
     app.delete('/toys/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
+      console.log(query);
       const result = await toysCollection.deleteOne(query);
       res.send(result);
   })
@@ -119,3 +205,11 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`server is running on port ${port}`)
 })
+
+
+
+
+
+
+
+
